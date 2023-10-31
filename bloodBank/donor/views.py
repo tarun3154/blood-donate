@@ -1,29 +1,36 @@
 from django.shortcuts import render, HttpResponseRedirect
-from .forms import DonorUserForm, DonorForm
+from .forms import *
+from .models import *
+from blood.models import *
 from django.contrib.auth.models import Group
 
 def donor_signup_view(request):
-    userform = DonorUserForm()
-    donorform = DonorForm()
-    mydict = {'userform': userform, 'donorform': donorform}
-    
-    if request.method == "POST":
-        userform = DonorUserForm(request.POST)
-        donorform = DonorForm(request.POST, request.FILES)
-        
-        if userform.is_valid() and donorform.is_valid():
-            user = userform.save()
+    userForm=DonorUserForm()
+    donorForm=DonorForm()
+    mydict={'userForm':userForm,'donorForm':donorForm}
+    if request.method=='POST':
+        userForm=DonorUserForm(request.POST)
+        donorForm=DonorForm(request.POST,request.FILES)
+        if userForm.is_valid() and donorForm.is_valid():
+            user=userForm.save()
             user.set_password(user.password)
             user.save()
-            
-            donor = donorform.save(commit=False)
-            donor.user = user
-            donor.bloodgroup = donorform.cleaned_data['bloodgroup']
+            donor=donorForm.save(commit=False)
+            donor.user=user
+            donor.bloodgroup=donorForm.cleaned_data['bloodgroup']
             donor.save()
-            
-            my_donor_group, created = Group.objects.get_or_create(name='DONOR')
-            my_donor_group.user_set.add(user)
-            
-            return HttpResponseRedirect('donor/donorlogin')  # Use the correct URL
+            my_donor_group = Group.objects.get_or_create(name='DONOR')
+            my_donor_group[0].user_set.add(user)
+        return HttpResponseRedirect('donor: donorlogin')
+    return render(request,'donor/donorsignup.html',context=mydict)
 
-    return render(request, 'donor/donorsignup.html', context=mydict)
+def donor_dashboard_view(request):
+    donor = Donor.objects.get(user_id = request.user.id)
+
+    dict={
+        'requestpending': BloodRequest.objects.all().filter(request_by_donor = donor).filter(status='Pending').count(),
+        'requestapproved':BloodRequest.objects.all().filter(request_by_donor= donor).filter(status='Approved').count(),
+        'requestmade':BloodRequest.objects.all().filter(request_by_donor= donor).count(),
+        'requestrejected':BloodRequest.objects.all().filter(request_by_donor=donor).filter(status='Rejected').count(),
+    }
+    return render(request,'donor/donor_dashboard.html',context=dict)

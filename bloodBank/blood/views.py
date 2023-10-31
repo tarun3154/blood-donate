@@ -16,7 +16,6 @@ from .forms import *
 
 def home_view(request):
     x=models.Stock.objects.all()
-    print(x)
     if len(x)==0:
         blood1=models.Stock()
         blood1.bloodgroup="A+"
@@ -63,26 +62,26 @@ def is_patient(user):
 
 def afterlogin_view(request):
     if is_donor(request.user):      
-        return redirect('donor/donor-dashboard')
+        return redirect('donor:donor-dashboard')
                 
     elif is_patient(request.user):
-        return redirect('patient/patient-dashboard')
+        return redirect('patient:patient-dashboard')
     else:
         return redirect('admin-dashboard')
 
 @login_required(login_url='adminlogin')
 def admin_dashboard_view(request):
-    totalunit=models.Stock.objects.aggregate(Sum('unit'))
+    totalunit=Stock.objects.aggregate(Sum('unit'))
     dict={
 
-        'A1':models.Stock.objects.get(bloodgroup="A+"),
-        'A2':models.Stock.objects.get(bloodgroup="A-"),
-        'B1':models.Stock.objects.get(bloodgroup="B+"),
-        'B2':models.Stock.objects.get(bloodgroup="B-"),
-        'AB1':models.Stock.objects.get(bloodgroup="AB+"),
-        'AB2':models.Stock.objects.get(bloodgroup="AB-"),
-        'O1':models.Stock.objects.get(bloodgroup="O+"),
-        'O2':models.Stock.objects.get(bloodgroup="O-"),
+        'A1':Stock.objects.get(bloodgroup="A+"),
+        'A2':Stock.objects.get(bloodgroup="A-"),
+        'B1':Stock.objects.get(bloodgroup="B+"),
+        'B2':Stock.objects.get(bloodgroup="B-"),
+        'AB1':Stock.objects.get(bloodgroup="AB+"),
+        'AB2':Stock.objects.get(bloodgroup="AB-"),
+        'O1':Stock.objects.get(bloodgroup="O+"),
+        'O2':Stock.objects.get(bloodgroup="O-"),
         'totaldonors':dmodels.Donor.objects.all().count(),
         'totalbloodunit':totalunit['unit__sum'],
         'totalrequest':models.BloodRequest.objects.all().count(),

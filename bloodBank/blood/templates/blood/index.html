@@ -11,23 +11,11 @@
     <style>
         .xyz{
           margin-bottom: 0px;
-          background-image: url({% static "blood/image/homepage.jpg" %});
+          background-image: url({% static "image/homepage.jpg" %});
           background-size: cover;
           background-repeat: no-repeat;
         }
-
-
-        .footer {
-  
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            background-color: #FF0018;
-            color: white;
-            text-align: center;
-            height:50px;
-         }
-      </style>
+    </style>
       
 
 
@@ -35,41 +23,12 @@
 
 
    
-
-  <div class="bs-example">
-    <nav style="background-color: #FF0018;" class="navbar navbar-expand-md navbar-dark fixed-top">
-      <a href="/" class="navbar-brand"><i class="fas fa-heartbeat"></i>&nbsp; Blood Bank Management</a>
-      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-
-
-        <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/"><i class="fas fa-home"></i>&nbsp; Home</i></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/patient/patientlogin"><i class="fas fa-procedures"></i>&nbsp; Patient</i></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/donor/donorlogin"><i class="fas fa-user"></i>&nbsp; Donor</i></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/adminlogin"><i class="fas fa-user-shield"></i>&nbsp; Admin</i></a>
-                </li>
-                
-            </ul>
-        </div>
+{% include "blood/navbar.html" %}
+ 
 
 
 
 
-      </div>
-    </nav>
-  </div>
 
 <section id="section-jumbotron" style="margin-bottom: 0px;" class="jumbotron jumbotron-fluid d-flex justify-content-center align-items-center xyz">
     <div class="container text-center">
@@ -92,11 +51,8 @@
   </div>
 
 
-    <div class="footer">
-        <p>Blood Bank Management System<br>
-            Made In India &copy; 2023   
-        </p>
-    </div>
+    {% include "blood/footer.html" %}
+    
 </body>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

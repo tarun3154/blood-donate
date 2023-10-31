@@ -42,16 +42,16 @@
         <div class="navbar-collapse collapse w-100 order-3 dual-collapse2">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/"><i class="fas fa-home"></i>&nbsp; Home</i></a>
+                    <a class="nav-link" style="color: white;" href="{% url "home" %}"><i class="fas fa-home"></i>&nbsp; Home</i></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/patient/patientlogin"><i class="fas fa-procedures"></i>&nbsp; Patient</i></a>
+                    <a class="nav-link" style="color: white;" href="{% url "patient:patientlogin" %}"><i class="fas fa-procedures"></i>&nbsp; Patient</i></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/donor/donorlogin"><i class="fas fa-user"></i>&nbsp; Donor</i></a>
+                    <a class="nav-link" style="color: white;" href="{% url "donor:donorlogin" %}"><i class="fas fa-user"></i>&nbsp; Donor</i></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" style="color: white;" href="/adminlogin"><i class="fas fa-user-shield"></i>&nbsp; Admin</i></a>
+                    <a class="nav-link" style="color: white;" href="{% url "adminlogin" %}"><i class="fas fa-user-shield"></i>&nbsp; Admin</i></a>
                 </li>
                 
             </ul>

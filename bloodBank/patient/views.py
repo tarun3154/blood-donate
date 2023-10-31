@@ -1,10 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.shortcuts import render, HttpResponseRedirect
-from .forms import PatientUserForm, PatientForm
-from .models import Patient
-from donor.models import Donor
-
+from .forms import *
+from .models import *
+from blood.models import *
 def patient_signup_view(request):
     userForm = PatientUserForm()
     patientForm = PatientForm()
@@ -27,6 +26,19 @@ def patient_signup_view(request):
             my_patient_group, created = Group.objects.get_or_create(name='PATIENT')
             my_patient_group.user_set.add(user)
             
-            return HttpResponseRedirect('patient/patientlogin')
+            return HttpResponseRedirect('patient:patientlogin')
 
     return render(request, 'patient/patientsignup.html', context=mydict)
+
+
+def patient_dashboard_view(request):
+    patient= Patient.objects.get(user_id=request.user.id)
+    dict={
+        'requestpending': BloodRequest.objects.all().filter(request_by_patient=patient).filter(status='Pending').count(),
+        'requestapproved': BloodRequest.objects.all().filter(request_by_patient=patient).filter(status='Approved').count(),
+        'requestmade': BloodRequest.objects.all().filter(request_by_patient=patient).count(),
+        'requestrejected': BloodRequest.objects.all().filter(request_by_patient=patient).filter(status='Rejected').count(),
+
+    }
+   
+    return render(request,'patient/patient_dashboard.html',context=dict)
