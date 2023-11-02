@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
-from . import models
+from .models import *
+from .forms import * 
 
 
 class DonorUserForm(forms.ModelForm):
@@ -13,5 +14,10 @@ class DonorUserForm(forms.ModelForm):
 
 class DonorForm(forms.ModelForm):
     class Meta:
-        model=models.Donor
+        model=Donor
         fields=['bloodgroup','address','mobile','profile_pic']
+
+class DonationForm(forms.ModelForm):
+    class Meta:
+        model=BloodDonate
+        fields=['age','bloodgroup','disease','unit']

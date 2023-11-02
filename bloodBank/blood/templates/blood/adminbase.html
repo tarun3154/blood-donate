@@ -177,9 +177,9 @@ body{
     <div class="sidebar">
         
         <ul>
-            <li><a style="text-decoration:none;" href="/"><i class="fas fa-home"></i>Home</a></li>
-            <li><a style="text-decoration:none;" href="/"><i class="fas fa-user"></i>Donor</a></li>
-            <li><a style="text-decoration:none;" href="/"><i class="fas fa-user-injured"></i>Patient</a></li>
+            <li><a style="text-decoration:none;" href="{% url "admin-dashboard" %}"><i class="fas fa-home"></i>Home</a></li>
+            <li><a style="text-decoration:none;" href="{% url "admin-donor" %}"><i class="fas fa-user"></i>Donor</a></li>
+            <li><a style="text-decoration:none;" href="{% url "admin-patient" %}"><i class="fas fa-user-injured"></i>Patient</a></li>
 
            
         </ul> 
