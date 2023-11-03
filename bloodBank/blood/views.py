@@ -165,3 +165,42 @@ def delete_patient_view(request,pk):
     user.delete()
     patient.delete()
     return HttpResponseRedirect('/admin-patient')
+
+
+@login_required(login_url='adminlogin')
+def admin_request_view(request):
+    requests= BloodRequest.objects.all().filter(status = 'Pending')
+    return render(request,'blood/admin_request.html',{'requests':requests})
+
+
+@login_required(login_url='adminlogin')
+def admin_request_history_view(request):
+    requests = BloodRequest.objects.all().exclude(status = 'Pending')
+    return render(request,'blood/admin_request_history.html',{'requests':requests})
+
+@login_required(login_url='adminlogin')
+def admin_donation_view(request):
+    donations=dmodels.BloodDonate.objects.all()
+    return render(request,'blood/admin_donation.html',{'donations':donations})
+
+@login_required(login_url='adminlogin')
+def approve_donation_view(request,pk):
+    donation = BloodDonate.objects.get(id=pk)
+    donation_blood_group= donation.bloodgroup
+    donation_blood_unit = donation.unit
+
+    stock = Stock.objects.get(bloodgroup=donation_blood_group)
+    stock.unit=stock.unit+donation_blood_unit
+    stock.save()
+
+    donation.status = 'Approved'
+    donation.save()
+    return redirect('admin-donation')
+
+
+@login_required(login_url='adminlogin')
+def reject_donation_view(request,pk):
+    donation=BloodDonate.objects.get(id=pk)
+    donation.status='Rejected'
+    donation.save()
+    return redirect('admin-donation')
