@@ -4,6 +4,7 @@ from django.shortcuts import render, HttpResponseRedirect,redirect
 from .forms import *
 from .models import *
 from blood.models import *
+from blood.forms import *
 
 
 
@@ -28,6 +29,26 @@ def patient_signup_view(request):
         return redirect('patient:patientlogin')
     return render(request,'patient/patientsignup.html',context=mydict)
 
+
+
+def make_request_view(request):
+    request_form=RequestForm()
+    if request.method=='POST':
+        request_form=RequestForm(request.POST)
+        if request_form.is_valid():
+            blood_request=request_form.save(commit=False)
+            blood_request.bloodgroup=request_form.cleaned_data['bloodgroup']
+            patient= models.Patient.objects.get(user_id=request.user.id)
+            blood_request.request_by_patient=patient
+            blood_request.save()
+            return HttpResponseRedirect('my-request')  
+    return render(request,'patient/makerequest.html',{'request_form':request_form})
+
+def my_request_view(request):
+    patient= models.Patient.objects.get(user_id=request.user.id)
+    blood_request=BloodRequest.objects.all().filter(request_by_patient=patient)
+    return render(request,'patient/my_request.html',{'blood_request':blood_request})
+
 def patient_dashboard_view(request):
     patient= Patient.objects.get(user_id=request.user.id)
     dict={
@@ -39,3 +60,22 @@ def patient_dashboard_view(request):
     }
    
     return render(request,'patient/patient_dashboard.html',context=dict)
+
+
+def make_request_view(request):
+    request_form=RequestForm()
+    if request.method=='POST':
+        request_form=RequestForm(request.POST)
+        if request_form.is_valid():
+            blood_request=request_form.save(commit=False)
+            blood_request.bloodgroup=request_form.cleaned_data['bloodgroup']
+            patient= models.Patient.objects.get(user_id=request.user.id)
+            blood_request.request_by_patient=patient
+            blood_request.save()
+            return redirect('patient:my-request')  
+    return render(request,'patient/makerequest.html',{'request_form':request_form})
+
+def my_request_view(request):
+    patient= Patient.objects.get(user_id=request.user.id)
+    blood_request=BloodRequest.objects.all().filter(request_by_patient=patient)
+    return render(request,'patient/my_request.html',{'blood_request':blood_request})

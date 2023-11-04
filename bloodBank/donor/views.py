@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponseRedirect,redirect
 from .forms import *
 from .models import *
 from blood.models import *
+from blood.forms import *
 
 from django.contrib.auth.models import Group
 
@@ -35,23 +36,42 @@ def donor_dashboard_view(request):
     }
     return render(request,'donor/donor_dashboard.html',context=dict)
 
+
 def donate_blood_view(request):
-    donation_form= DonationForm()
-    if request.method == 'POST':
-        donation_form= DonationForm(request.POST)
+    donation_form=DonationForm()
+    if request.method=='POST':
+        donation_form=DonationForm(request.POST)
         if donation_form.is_valid():
-            blood_donate= donation_form.save(commit=False)
-            blood_donate.group =donation_form.cleaned_data['bloodgroup']
-            donor= Donor.objects.get(user_id = request.user.id)
-            blood_donate.donor= donor
+            blood_donate=donation_form.save(commit=False)
+            blood_donate.bloodgroup=donation_form.cleaned_data['bloodgroup']
+            donor= Donor.objects.get(user_id=request.user.id)
+            
+            blood_donate.donor=donor
             blood_donate.save()
-        return redirect('donor:donation-history')  
+            return redirect('donor:donation-history')  
     return render(request,'donor/donate_blood.html',{'donation_form':donation_form})
-        
 
 def donation_history_view(request):
     donor=Donor.objects.get(user_id=request.user.id)
     donations= BloodDonate.objects.all().filter(donor=donor)
     return render(request,'donor/donation_history.html',{'donations':donations})
     
-            
+
+def make_request_view(request):
+    request_form=RequestForm()
+    if request.method=='POST':
+        request_form=RequestForm(request.POST)
+        if request_form.is_valid():
+            blood_request=request_form.save(commit=False)
+            blood_request.bloodgroup=request_form.cleaned_data['bloodgroup']
+            donor= Donor.objects.get(user_id=request.user.id)
+            blood_request.request_by_donor=donor
+            blood_request.save()
+            return redirect('donor:request-history')  
+    return render(request,'donor/makerequest.html',{'request_form':request_form})
+
+
+def request_history_view(request):
+    donor= Donor.objects.get(user_id=request.user.id)
+    blood_request=BloodRequest.objects.all().filter(request_by_donor=donor)
+    return render(request,'donor/request_history.html',{'blood_request':blood_request})

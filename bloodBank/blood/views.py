@@ -90,6 +90,31 @@ def admin_dashboard_view(request):
     }
     return render(request,'blood/admin_dashboard.html',context=dict)
 
+
+@login_required(login_url='adminlogin')
+def admin_blood_view(request):
+    dict={
+        'bloodForm':BloodForm(),
+        'A1':Stock.objects.get(bloodgroup="A+"),
+        'A2':Stock.objects.get(bloodgroup="A-"),
+        'B1':Stock.objects.get(bloodgroup="B+"),
+        'B2':Stock.objects.get(bloodgroup="B-"),
+        'AB1':Stock.objects.get(bloodgroup="AB+"),
+        'AB2':Stock.objects.get(bloodgroup="AB-"),
+        'O1':Stock.objects.get(bloodgroup="O+"),
+        'O2':Stock.objects.get(bloodgroup="O-"),
+    }
+    if request.method=='POST':
+        bloodForm=forms.BloodForm(request.POST)
+        if bloodForm.is_valid() :        
+            bloodgroup=bloodForm.cleaned_data['bloodgroup']
+            stock=models.Stock.objects.get(bloodgroup=bloodgroup)
+            stock.unit=bloodForm.cleaned_data['unit']
+            stock.save()
+        return redirect('admin-blood')
+    return render(request,'blood/admin_blood.html',context=dict)
+
+
 @login_required(login_url='adminlogin')
 def admin_donor_view(request):
     donors=dmodels.Donor.objects.all()
@@ -126,36 +151,35 @@ def delete_donor_view(request,pk):
     user = User.objects.get(id=donor.user_id)
     user.delete()
     donor.delete()
-    return HttpResponseRedirect('/admin-donor')
+    return redirect('admin-donor')
 
 @login_required(login_url='adminlogin')
 def admin_patient_view(request):
     patients=pmodels.Patient.objects.all()
     return render(request,'blood/admin_patient.html',{'patients':patients})
 
+
 @login_required(login_url='adminlogin')
 def update_patient_view(request,pk):
-    patient = Patient.objects.get(id=pk)
-    user= User.objects.get(id=patient.user_id)
-    userForm = PatientUserForm(instance=user)
-    patientForm= patientForm(request.FILES,instance=user)
-
-    if request.method == 'POST':
+    patient=pmodels.Patient.objects.get(id=pk)
+    user=pmodels.User.objects.get(id=patient.user_id)
+    userForm=PatientUserForm(instance=user)
+    patientForm=PatientForm(request.FILES,instance=patient)
+    mydict={'userForm':userForm,'patientForm':patientForm}
+    if request.method=='POST':
         userForm=PatientUserForm(request.POST,instance=user)
-        patientForm= PatientForm(request.POST,request.FILES,instance=user)
-        mydict={'userForm':userForm,'patientForm':patientForm}
-
+        patientForm=PatientForm(request.POST,request.FILES,instance=patient)
         if userForm.is_valid() and patientForm.is_valid():
-            user= userForm.save()
-            user.set_passwor(user.password)
+            user=userForm.save()
+            user.set_password(user.password)
             user.save()
-
-            patient= patientForm.save(commit=False)
-            patient.user= user
-            patient.bloodgroup= patientForm.cleaned_data['bloodgroup']
+            patient=patientForm.save(commit=False)
+            patient.user=user
+            patient.bloodgroup=patientForm.cleaned_data['bloodgroup']
             patient.save()
-            return redirect('/admin-patient')
+            return redirect('admin-patient')
     return render(request,'blood/update_patient.html',context=mydict)
+
 
 
 @login_required(login_url='adminlogin')
@@ -182,6 +206,38 @@ def admin_request_history_view(request):
 def admin_donation_view(request):
     donations=dmodels.BloodDonate.objects.all()
     return render(request,'blood/admin_donation.html',{'donations':donations})
+
+
+@login_required(login_url='adminlogin')
+def update_approve_status_view(request,pk):
+    req=BloodRequest.objects.get(id=pk)
+    message=None
+    bloodgroup=req.bloodgroup
+    unit=req.unit
+    stock=Stock.objects.get(bloodgroup=bloodgroup)
+    if stock.unit > unit:
+        stock.unit=stock.unit-unit
+        stock.save()
+        req.status="Approved"
+        
+    else:
+        message="Stock Doest Not Have Enough Blood To Approve This Request, Only "+str(stock.unit)+" Unit Available"
+    req.save()
+
+    requests=BloodRequest.objects.all().filter(status='Pending')
+    return render(request,'blood/admin_request.html',{'requests':requests,'message':message})
+
+
+@login_required(login_url='adminlogin')
+def update_reject_status_view(request,pk):
+    req=models.BloodRequest.objects.get(id=pk)
+    req.status="Rejected"
+    req.save()
+    return redirect('/admin-request')
+
+
+
+
 
 @login_required(login_url='adminlogin')
 def approve_donation_view(request,pk):
