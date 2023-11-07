@@ -3,6 +3,14 @@
 <br><br>
 <div class="container">
 
+     {% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
     <div class="row">
         <div class="col-sm-3">
           <div class="card bg-light">

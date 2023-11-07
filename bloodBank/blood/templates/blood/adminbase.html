@@ -184,6 +184,12 @@ body{
             <li><a style="text-decoration:none;" href="{% url "admin-request" %}"><i class="fas fa-sync-alt"></i>Blood Requests</a></li>
             <li><a style="text-decoration:none;" href="{% url "admin-request-history" %}"><i class="fas fa-history"></i>Request History</a></li>
             <li><a style="text-decoration:none;" href="/admin-blood"><i class="fas fa-hand-holding-water"></i>Blood Stock</a></li>
+            <li><a style="text-decoration:none;" href="{% url "donation_requests" %}"><i class="fas fa-hand-holding-water"></i>Donation Request</a></li>
+            <li><a style="text-decoration:none;" href="{% url 'confirm_donation' request_id=2 %}"><i class="fas fa-hand-holding-water"></i>Confirmation</a></li>
+
+
+
+
            
            
         </ul> 

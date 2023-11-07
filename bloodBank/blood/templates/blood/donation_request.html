@@ -1,0 +1,30 @@
+{% extends 'blood/adminbase.html' %}
+{% block content %}
+{% load widget_tweaks %}
+{% load static %}
+
+<div class="container">
+    <h1>Donation Requests{% if selected_bloodgroup %} for {{ selected_bloodgroup }}{% endif %}</h1>
+
+    {% for request in requests %}
+    <li class="list-group-item">
+        <h2 class="mb-3">Request for {{ request.bloodgroup }}</h2>
+        <p>Donor Name: {{ request.donor_name }}</p>
+        <p>Created at: {{ request.created_at }}</p>
+        <p>Status: <span class="badge {% if request.is_fulfilled %}badge-success{% else %}badge-warning{% endif %}">
+            {% if request.is_fulfilled %}Fulfilled{% else %}Pending{% endif %}
+        </span></p>
+        {% if not request.is_fulfilled %}
+            <form method="post" class="mt-3">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="donated_unit">Units Donated:</label>
+                    <input type="number" class="form-control" name="donated_unit" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirm Donation</button>
+            </form>
+        {% endif %}
+    </li>
+{% endfor %}
+
+{% endblock content %}

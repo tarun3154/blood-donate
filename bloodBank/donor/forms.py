@@ -21,3 +21,4 @@ class DonationForm(forms.ModelForm):
     class Meta:
         model=BloodDonate
         fields=['age','bloodgroup','disease','unit']
+

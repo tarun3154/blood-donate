@@ -1,10 +1,11 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth.models import Group
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth.models import User
 from django.db.models import Sum,Q
-
+from django.core.exceptions import ObjectDoesNotExist
 from donor.models import *
+from .forms import *
 from patient.models import *
 from django.contrib.auth.decorators import login_required
 
@@ -51,7 +52,7 @@ def home_view(request):
         blood8.save()
 
     if request.user.is_authenticated:
-        return HttpResponseRedirect('afterlogin')  
+        return redirect('afterlogin')  
     return render(request,'blood/index.html')
 
 def is_donor(user):
@@ -105,10 +106,10 @@ def admin_blood_view(request):
         'O2':Stock.objects.get(bloodgroup="O-"),
     }
     if request.method=='POST':
-        bloodForm=forms.BloodForm(request.POST)
+        bloodForm=BloodForm(request.POST)
         if bloodForm.is_valid() :        
             bloodgroup=bloodForm.cleaned_data['bloodgroup']
-            stock=models.Stock.objects.get(bloodgroup=bloodgroup)
+            stock=Stock.objects.get(bloodgroup=bloodgroup)
             stock.unit=bloodForm.cleaned_data['unit']
             stock.save()
         return redirect('admin-blood')
@@ -117,7 +118,7 @@ def admin_blood_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_donor_view(request):
-    donors=dmodels.Donor.objects.all()
+    donors=Donor.objects.all()
     return render(request,'blood/admin_donor.html',{'donors':donors})
 
 
@@ -155,14 +156,14 @@ def delete_donor_view(request,pk):
 
 @login_required(login_url='adminlogin')
 def admin_patient_view(request):
-    patients=pmodels.Patient.objects.all()
+    patients=Patient.objects.all()
     return render(request,'blood/admin_patient.html',{'patients':patients})
 
 
 @login_required(login_url='adminlogin')
 def update_patient_view(request,pk):
-    patient=pmodels.Patient.objects.get(id=pk)
-    user=pmodels.User.objects.get(id=patient.user_id)
+    patient=Patient.objects.get(id=pk)
+    user=User.objects.get(id=patient.user_id)
     userForm=PatientUserForm(instance=user)
     patientForm=PatientForm(request.FILES,instance=patient)
     mydict={'userForm':userForm,'patientForm':patientForm}
@@ -188,7 +189,7 @@ def delete_patient_view(request,pk):
     user= User.objects.get(id=patient.user_id)
     user.delete()
     patient.delete()
-    return HttpResponseRedirect('/admin-patient')
+    return redirect('admin-patient')
 
 
 @login_required(login_url='adminlogin')
@@ -204,33 +205,38 @@ def admin_request_history_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_donation_view(request):
-    donations=dmodels.BloodDonate.objects.all()
+    donations=BloodDonate.objects.all()
     return render(request,'blood/admin_donation.html',{'donations':donations})
 
-
 @login_required(login_url='adminlogin')
-def update_approve_status_view(request,pk):
-    req=BloodRequest.objects.get(id=pk)
-    message=None
-    bloodgroup=req.bloodgroup
-    unit=req.unit
-    stock=Stock.objects.get(bloodgroup=bloodgroup)
-    if stock.unit > unit:
-        stock.unit=stock.unit-unit
-        stock.save()
-        req.status="Approved"
-        
-    else:
-        message="Stock Doest Not Have Enough Blood To Approve This Request, Only "+str(stock.unit)+" Unit Available"
-    req.save()
+def update_approve_status_view(request, pk):
+    req = get_object_or_404(BloodRequest, id=pk)  # Use get_object_or_404 to handle 404 errors
+    message = None
+    bloodgroup = req.bloodgroup
+    unit = req.unit
+    stock = Stock.objects.get(bloodgroup=bloodgroup)
 
-    requests=BloodRequest.objects.all().filter(status='Pending')
-    return render(request,'blood/admin_request.html',{'requests':requests,'message':message})
+    if stock.unit >= unit:  # Ensure you have enough units in stock
+        stock.unit -= unit
+        stock.save()
+        req.status = "Approved"
+        req.save()
+    else:
+        message = f"Stock does not have enough blood to approve this request. Only {stock.unit} unit(s) available."
+        if unit == 0:
+            eligible_donors = Donor.objects.filter(bloodgroup=bloodgroup)
+            for donor in eligible_donors:
+                DonationRequest.objects.create(
+                    bloodgroup=bloodgroup,
+                    donor_name=donor.donor_name,
+                )
+    requests = BloodRequest.objects.filter(status='Pending')
+    return render(request, 'blood/admin_request.html', {'requests': requests, 'message': message})
 
 
 @login_required(login_url='adminlogin')
 def update_reject_status_view(request,pk):
-    req=models.BloodRequest.objects.get(id=pk)
+    req=BloodRequest.objects.get(id=pk)
     req.status="Rejected"
     req.save()
     return redirect('/admin-request')
@@ -260,3 +266,33 @@ def reject_donation_view(request,pk):
     donation.status='Rejected'
     donation.save()
     return redirect('admin-donation')
+
+
+
+@login_required(login_url='adminlogin')
+def donation_requests(request):
+    requests = DonationRequest.objects.filter(is_fulfilled=False)
+    return render(request, 'blood/donation_request.html', {'requests': requests})
+
+@login_required(login_url='adminlogin')
+def confirm_donation(request, request_id):
+    try:
+        request = DonationRequest.objects.get(id=request_id)
+    except DonationRequest.DoesNotExist:
+        return redirect('donation_requests')
+
+    if request.is_fulfilled:
+        return redirect('donation_requests')
+
+    if request.method == 'POST':
+        form = DonationConfirmationForm(request.POST)
+        if form.is_valid():
+            donated_unit = form.cleaned_data['donated_unit']
+            request.units_donated = donated_unit
+            request.is_fulfilled = True
+            request.save()
+            return render(request, 'blood/donation_confirmation.html', {'request': request, 'units_donated': donated_unit})
+    else:
+        form = DonationConfirmationForm()
+
+    return render(request, 'blood/donation_confirmation.html', {'request': request, 'form': form})

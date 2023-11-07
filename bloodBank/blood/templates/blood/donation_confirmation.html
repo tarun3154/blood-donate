@@ -1,0 +1,20 @@
+{% extends 'blood/adminbase.html' %}
+{% block content %}
+{% load widget_tweaks %}
+{%load static%}
+
+
+<div class="container">
+    <h1 class="my-4">Donation Confirmation</h1>
+    
+    {% if request.is_fulfilled %}
+        <div class="alert alert-success" role="alert">
+            This request has already been fulfilled. Thank you for your contribution!
+        </div>
+    {% else %}
+        <div class="alert alert-success" role="alert">
+            You have confirmed a donation of {{ units_donated }} unit(s) for the request of {{ request.get_bloodgroup_display }}.
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

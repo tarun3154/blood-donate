@@ -3,9 +3,10 @@ from django.urls import path
 from blood import views
 
 
+
 urlpatterns = [
     
-    path('home',views.home_view,name='home'),
+    path('',views.home_view,name='home'),
     path('logout', LogoutView.as_view(template_name='blood/logout.html'),name='logout'),
 
     path('afterlogin', views.afterlogin_view,name='afterlogin'),
@@ -25,6 +26,7 @@ urlpatterns = [
     path('admin-request-history', views.admin_request_history_view,name='admin-request-history'),
     path('update-approve-status/<int:pk>', views.update_approve_status_view,name='update-approve-status'),
     path('update-reject-status/<int:pk>', views.update_reject_status_view,name='update-reject-status'),
-   
+    path('donation_requests/', views.donation_requests, name='donation_requests'),
+    path('confirm_donation/<int:request_id>/', views.confirm_donation, name='confirm_donation'),
 ]
 
